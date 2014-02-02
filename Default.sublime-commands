@@ -1,0 +1,10 @@
+[
+    {
+        "caption": "Multiline: Plus",
+        "command": "plus"
+    },
+    {
+        "caption": "Multiline: Slash",
+        "command": "slash"
+    }
+]
