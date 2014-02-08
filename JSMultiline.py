@@ -1,101 +1,107 @@
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
+import re
+import os
 
+
+rexLastTabs = re.compile(r'\t+$', re.MULTILINE)
+rexEmptyLines = re.compile('^[ \t]*$\r?\n', re.MULTILINE)
+rexCont = re.compile(r'[^\t\s]\D+[^\t]')
+rexFormatted = re.compile(r"((?<=\s)'|(?<=\t)')|('*\s[\+|\\|])")
 
 class Multiline(sublime_plugin.TextCommand):
 	def run(self, edit):
+
+		if not is_js_buffer(self.view):
+			sublime.status_message('Multiline: Not supported format.')
+			return False
+
 		for region in self.view.sel():
 			if region.empty():
 				continue
 			text = self.view.substr(region)
-			replacement = self.format(text)
+			formatted = self.checkFormat(text)
+
+			if formatted:
+				replacement = formatted
+			else:
+				replacement = self.format( rexEmptyLines.sub('', text) )
 			
 			self.view.replace(edit, region, replacement)
-	
-	def escLastTabs(self, line):
-		if line.endswith('\t'):
-			return self.escLastTabs(line[:-1])
 
-		return line
+			sublime.status_message('Multiline: Formatting is done.')
 	
-	def checkFormat(self, lines):
+	def checkFormat(self, text):
 		formatted = False
 
-		if lines[0].endswith('+'):
-			formatted = ['+']
-		elif lines[0].endswith('\\'):
-			formatted = ['\\']
+		# only one line formatted
+		if text.find('\n') == -1 and (text.endswith("';") or text.endswith("\\")):
+			return text[1: len(text) -2]
+
+
+		if rexFormatted.search( text ):
+			formatted = rexFormatted.sub('', text)
+			formatted =formatted[1: len(formatted) -2]
+
 
 		return formatted
 
-	def unFormat(self, lines, char):
-		print 'unFormat'
-		print char
+
+class MultilinePlusCommand(Multiline):
+	def format(self, text):
 		
-		if char[0] == '+':
-			for index in range(len(lines)):
-			
-				tIndex = lines[index].rfind('\t') + 1
-				line = lines[index]
-			
-				if(index == len(lines) - 1):
-					lines[index] = line[0: tIndex] + line[tIndex + 1: len(line) - 2]  
-				else:
-					lines[index] = line[0: tIndex] + line[tIndex + 1: len(line) - 3]
-		elif char[0] == '\\':
-			for index in range(len(lines)):
-			
-				tIndex = lines[index].rfind('\t') + 1
-				line = lines[index]
-			
-				if index == len(lines) - 1:
-					lines[index] = line[0: len(line) - 2]  
-				elif index == 0:
-					lines[index] = line[0: tIndex] + line[tIndex + 1: len(line) - 1]
-				else:
-					lines[index] = line[0: len(line) - 1]
-
-		return '\n'.join(lines)
-
-
-class PlusCommand(Multiline):
-	def format(self, lines):
-		lines = lines.split('\n')
-		charFormat = self.checkFormat(lines)
-
-		if charFormat:
-			return self.unFormat(lines, charFormat)
+		lines = text.split('\n')
 		
 		for index in range(len(lines)):
-			lines[index] = self.escLastTabs(lines[index])
 			
-			tIndex = lines[index].rfind('\t') + 1
-			line = lines[index]
+			lines[index] = rexLastTabs.sub('', lines[index])
 			
-			if(index == len(lines) - 1):
-				lines[index] = line[0: tIndex] + "'" + line[tIndex: len(line)] + "';"  
+			if index == len(lines) - 1:
+				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + "';", lines[index])
 			else:
-				lines[index] = line[0: tIndex] + "'" + line[tIndex: len(line)] + "' +"
+				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + "' +", lines[index])
 			
+		
 		return '\n'.join(lines)
 
 
 
-class SlashCommand(Multiline):
-	def format(self, lines):
-		lines = lines.split('\n')
-		charFormat = self.checkFormat(lines)
-
-		if charFormat:
-			return self.unFormat(lines, charFormat)
+class MultilineSlashCommand(Multiline):
+	def format(self, text):
+		
+		lines = text.split('\n')
 		
 		for index in range(len(lines)):
-			lines[index] = self.escLastTabs(lines[index])
+
+			lines[index] = rexLastTabs.sub('', lines[index])
 			
-			if(index == len(lines) - 1):
-				lines[index] = lines[index] + "';"  
-			elif (index == 0):
-				lines[index] = "'" + lines[index] + "\\"
+			if index == 0:
+				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + r" \\", lines[index])
+			elif index == len(lines) - 1:
+				lines[index] = rexCont.sub( rexCont.search( lines[index] ).group() + "';", lines[index])
 			else:
-				lines[index] = lines[index] + "\\"
+				lines[index] = rexCont.sub( rexCont.search( lines[index] ).group() + r" \\", lines[index] )
 			
 		return '\n'.join(lines)
+
+
+
+def active_view():
+	return sublime.active_window().active_view()
+
+#https://github.com/jdc0589/JsFormat line 47
+def is_js_buffer(view):
+	fName = view.file_name()
+	vSettings = view.settings()
+	syntaxPath = vSettings.get('syntax')
+	syntax = ""
+	ext = ""
+
+	if (fName != None): # file exists, pull syntax type from extension
+		ext = os.path.splitext(fName)[1][1:]
+	if(syntaxPath != None):
+		syntax = os.path.splitext(syntaxPath)[0].split('/')[-1].lower()
+
+	return ext in ['js', 'json'] or "javascript" in syntax or "json" in syntax
+
+

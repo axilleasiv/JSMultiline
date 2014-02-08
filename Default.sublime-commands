@@ -1,10 +1,10 @@
 [
     {
         "caption": "Multiline: Plus",
-        "command": "plus"
+        "command": "multiline_plus"
     },
     {
         "caption": "Multiline: Slash",
-        "command": "slash"
+        "command": "multiline_slash"
     }
 ]
