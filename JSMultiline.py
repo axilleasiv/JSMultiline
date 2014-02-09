@@ -4,9 +4,9 @@ import re
 import os
 
 
-rexLastTabs = re.compile(r'\t+$', re.MULTILINE)
+rexLastTabs = re.compile(r'(\t+|\s+)$', re.MULTILINE)
 rexEmptyLines = re.compile('^[ \t]*$\r?\n', re.MULTILINE)
-rexCont = re.compile(r'[^\t\s]\D+[^\t]')
+rexCont = re.compile(r'[^\t\s].*[^\t\s]')
 rexFormatted = re.compile(r"((?<=\s)'|(?<=\t)')|('*\s[\+|\\|])")
 
 class Multiline(sublime_plugin.TextCommand):
