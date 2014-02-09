@@ -20,7 +20,7 @@ Clone this repository in to the Sublime Text 2 "Packages" directory
 
 ## Key Bindings - Commands
 
-The default key bindings are "shift+ctrl+e" and "shift+ctrl+\",\n
+The default key bindings are "shift+ctrl+e" and "shift+ctrl+\",
 for the following commands: Multiline: Plus and Multiline: Slash
 
 if the string is already formatted, both two commands will unformat the string to the
