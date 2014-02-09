@@ -85,10 +85,6 @@ class MultilineSlashCommand(Multiline):
 		return '\n'.join(lines)
 
 
-
-def active_view():
-	return sublime.active_window().active_view()
-
 #https://github.com/jdc0589/JsFormat line 47
 def is_js_buffer(view):
 	fName = view.file_name()
@@ -103,5 +99,3 @@ def is_js_buffer(view):
 		syntax = os.path.splitext(syntaxPath)[0].split('/')[-1].lower()
 
 	return ext in ['js', 'json'] or "javascript" in syntax or "json" in syntax
-
-
