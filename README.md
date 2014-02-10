@@ -1,7 +1,7 @@
 JSMultiline
 ===========
 
-Sublime text 2 plugin that adds multiline string support for javascript
+Sublime text 2,3 plugin that adds multiline string support for javascript
 
 
 ![alt tag](https://raw.github.com/axilleasiv/JSMultiline/master/screenshoot.gif)
@@ -15,7 +15,7 @@ by adding backslash or plus character at the end of per line
 ## Install
 
 #### Git Clone
-Clone this repository in to the Sublime Text 2 "Packages" directory
+Clone this repository in to the Sublime Text 2 or 3 "Packages" directory
 
 
 ## Key Bindings - Commands
