@@ -1,4 +1,16 @@
 [
-     { "keys": ["ctrl+shift+e"], "command": "multiline_plus" },
-     { "keys": ["ctrl+shift+\\"], "command": "multiline_slash" }
+    { 
+     	"keys": ["ctrl+shift+e"],
+     	"args": {
+            "action": "plus"
+        }, 
+     	"command": "run_multiline_action"
+    },
+    { 
+    	"keys": ["ctrl+shift+\\"],
+    	"args": {
+            "action": "slash"
+        }, 
+    	"command": "run_multiline_action" 
+    }
 ]

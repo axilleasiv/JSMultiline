@@ -1,10 +1,16 @@
 [
     {
         "caption": "Multiline: Plus",
-        "command": "multiline_plus"
+        "command": "run_multiline_action",
+        "args": {
+			"action": "plus"
+		}
     },
     {
         "caption": "Multiline: Slash",
-        "command": "multiline_slash"
+        "command": "run_multiline_action",
+        "args": {
+			"action": "slash"
+		}
     }
 ]

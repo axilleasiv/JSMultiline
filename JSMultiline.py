@@ -9,8 +9,8 @@ rexEmptyLines = re.compile('^[ \t]*$\r?\n', re.MULTILINE)
 rexCont = re.compile(r'[^\t\s].*[^\t\s]')
 rexFormatted = re.compile(r"((?<=\s)'|(?<=\t)')|('*\s[\+|\\|])")
 
-class Multiline(sublime_plugin.TextCommand):
-	def run(self, edit):
+class RunMultilineAction(sublime_plugin.TextCommand):
+	def run(self, edit, action=None):
 
 		if not is_js_buffer(self.view):
 			sublime.status_message('Multiline: Not supported format.')
@@ -25,7 +25,8 @@ class Multiline(sublime_plugin.TextCommand):
 			if formatted:
 				replacement = formatted
 			else:
-				replacement = self.format( rexEmptyLines.sub('', text) )
+				text = re.sub(r"'", '"', text)
+				replacement = self.format( rexEmptyLines.sub('', text), action )
 			
 			self.view.replace(edit, region, replacement)
 
@@ -46,42 +47,24 @@ class Multiline(sublime_plugin.TextCommand):
 
 		return formatted
 
+	def format(self, text, action=None):
 
-class MultilinePlusCommand(Multiline):
-	def format(self, text):
-		
 		lines = text.split('\n')
-		
+		symbol = action == 'plus' and '+' or r'\\'
+		quote = action == 'plus' and "'" or  ""
+
 		for index in range(len(lines)):
 			
 			lines[index] = rexLastTabs.sub('', lines[index])
 			
 			if index == len(lines) - 1:
-				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + "';", lines[index])
+				lines[index] = rexCont.sub( quote + rexCont.search( lines[index] ).group() + "';", lines[index])
+			elif index == 0 and action == 'slash':
+				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + " " + symbol, lines[index])
 			else:
-				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + "' +", lines[index])
+				lines[index] = rexCont.sub( quote + rexCont.search( lines[index] ).group() + quote + " " + symbol, lines[index])
 			
 		
-		return '\n'.join(lines)
-
-
-
-class MultilineSlashCommand(Multiline):
-	def format(self, text):
-		
-		lines = text.split('\n')
-		
-		for index in range(len(lines)):
-
-			lines[index] = rexLastTabs.sub('', lines[index])
-			
-			if index == 0:
-				lines[index] = rexCont.sub( "'" + rexCont.search( lines[index] ).group() + r" \\", lines[index])
-			elif index == len(lines) - 1:
-				lines[index] = rexCont.sub( rexCont.search( lines[index] ).group() + "';", lines[index])
-			else:
-				lines[index] = rexCont.sub( rexCont.search( lines[index] ).group() + r" \\", lines[index] )
-			
 		return '\n'.join(lines)
 
 
